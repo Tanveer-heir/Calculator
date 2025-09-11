@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-public class CalculatorConverter {
+public class Calculator {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -105,3 +105,4 @@ public class CalculatorConverter {
     public static double kgToLb(double kg) { return kg * 2.20462; }
     public static double lbToKg(double lb) { return lb / 2.20462; }
 }
+
