@@ -39,6 +39,28 @@ A Modern Scientific Java Application combining a powerful scientific calculator 
     ```
 3. The application window will launch. Use mode selector, input fields, buttons, and shortcuts as described above.
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/initial%20preview.png" width="215"/>
+  <img src="screenshots/calculator%20preview.png" width="215"/>
+  <img src="screenshots/converter%20preview.png" width="215"/>
+</p>
+<p align="center">
+  <b>Initial Preview</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculator Preview</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Convertor Preview</b>
+</p>
+
+<p align="center">
+  <img src="screenshots/converter%20preview%202.png" width="215"/>
+  <img src="screenshots/History%20Preview.png" width="215"/>
+  <img src="screenshots/Dark%20Mode%20preview.png" width="215"/>
+</p>
+<p align="center">
+  <b>Converter Preview 2</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>History Preview</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Dark Mode Preview</b>
+</p>
+
+
+
 ## Usage Tips
 
 - Select mode (Calculator/Converter), then choose an operation.
