@@ -1,256 +1,275 @@
-import java.util.Scanner;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
-public class Calculator {
+public class CalculatorConverterGUI extends JFrame {
+    private final JComboBox<String> modeCombo;
+    private final JComboBox<String> operationCombo;
+    private final JTextField input1Field;
+    private JTextField input2Field;
+    private JButton calculateButton;
+    private JLabel resultLabel;
 
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        while (true) {
-            System.out.println("\n--- Calculator & Converter ---");
-            System.out.println("1. Calculator");
-            System.out.println("2. Converter");
-            System.out.println("0. Exit");
-            System.out.print("Choose an option: ");
-            int option = sc.nextInt();
-            switch (option) {
-                case 1:
-                    calculator(sc);
-                    break;
-                case 2:
-                    converter(sc);
-                    break;
-                case 0:
-                    System.out.println("Bye!");
-                    System.exit(0);
-                default:
-                    System.out.println("Invalid.");
-            }
-        }
+    public CalculatorConverterGUI() {
+        setTitle("Calculator & Converter");
+        setSize(450, 320);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(new JLabel("Mode:"), gbc);
+        modeCombo = new JComboBox<>(new String[] { "Calculator", "Converter" });
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        add(modeCombo, gbc);
+
+       
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(new JLabel("Operation:"), gbc);
+        operationCombo = new JComboBox<>();
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        add(operationCombo, gbc);
+
+       
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(new JLabel("Input 1:"), gbc);
+        input1Field = new JTextField();
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        add(input1Field, gbc);
+
+       
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        add(new JLabel("Input 2 (if needed):"), gbc);
+        input2Field = new JTextField();
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        add(input2Field, gbc);
+
+      
+        calculateButton = new JButton("Calculate");
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        add(calculateButton, gbc);
+
+       
+        resultLabel = new JLabel("Result: ");
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        add(resultLabel, gbc);
+
+        
+        updateOperations();
+
+        
+        modeCombo.addActionListener(e -> updateOperations());
+
+        calculateButton.addActionListener(e -> performCalculation());
+
+        setLocationRelativeTo(null);
+        setVisible(true);
     }
 
-    public static void calculator(Scanner sc) {
-        System.out.println("\nCalculator:");
-        System.out.println("Available operators:");
-        System.out.println("+, -, *, /, ^, %, sqrt, log, sin, cos, tan, !, exp, abs, inv");
-        System.out.print("Enter first number: ");
-        double a = sc.nextDouble();
-        System.out.print("Enter an operator (+, -, *, /, ^, %, sqrt, log, sin, cos, tan, !, exp, abs, inv): ");
-        String op = sc.next();
-
-        double res = 0;
-        boolean valid = true;
-
-        if (op.equals("sqrt") || op.equals("log") || op.equals("sin") || op.equals("cos") || op.equals("tan") ||
-                op.equals("!") || op.equals("exp") || op.equals("abs") || op.equals("inv")) {
-
-            switch (op) {
-                case "sqrt":
-                    if (a < 0) {
-                        System.out.println("Cannot take square root of negative number.");
-                        valid = false;
-                    } else {
-                        res = Math.sqrt(a);
-                    }
-                    break;
-                case "log":
-                    if (a <= 0) {
-                        System.out.println("Logarithm undefined for zero or negative numbers.");
-                        valid = false;
-                    } else {
-                        res = Math.log10(a);
-                    }
-                    break;
-                case "sin":
-                    res = Math.sin(Math.toRadians(a));
-                    break;
-                case "cos":
-                    res = Math.cos(Math.toRadians(a));
-                    break;
-                case "tan":
-                    res = Math.tan(Math.toRadians(a));
-                    break;
-                case "!":
-                    if (a < 0 || a != (int) a) {
-                        System.out.println("Factorial undefined for negative or non-integers.");
-                        valid = false;
-                    } else {
-                        res = factorial((int) a);
-                    }
-                    break;
-                case "exp":
-                    res = Math.exp(a);
-                    break;
-                case "abs":
-                    res = Math.abs(a);
-                    break;
-                case "inv":
-                    if (a == 0) {
-                        System.out.println("Cannot calculate inverse of zero.");
-                        valid = false;
-                    } else {
-                        res = 1 / a;
-                    }
-                    break;
-            }
+    private void updateOperations() {
+        operationCombo.removeAllItems();
+        if (modeCombo.getSelectedItem().equals("Calculator")) {
+            String[] calcOps = {
+                    "+", "-", "*", "/", "^", "%",
+                    "sqrt", "log", "sin", "cos", "tan",
+                    "!", "exp", "abs", "inv"
+            };
+            for (String op : calcOps)
+                operationCombo.addItem(op);
+            input2Field.setEnabled(true);
         } else {
-            System.out.print("Enter second number: ");
-            double b = sc.nextDouble();
-            switch (op) {
-                case "+":
-                    res = a + b;
-                    break;
-                case "-":
-                    res = a - b;
-                    break;
-                case "*":
-                    res = a * b;
-                    break;
-                case "/":
-                    if (b == 0) {
-                        System.out.println("Cannot divide by zero.");
-                        valid = false;
-                    } else {
-                        res = a / b;
-                    }
-                    break;
-                case "^":
-                    res = Math.pow(a, b);
-                    break;
-                case "%":
-                    if (b == 0) {
-                        System.out.println("Cannot modulo by zero.");
-                        valid = false;
-                    } else {
-                        res = a % b;
-                    }
-                    break;
-                default:
-                    System.out.println("Unknown operator.");
-                    valid = false;
+            String[] convOps = {
+                    "Celsius to Fahrenheit", "Fahrenheit to Celsius",
+                    "Meters to Feet", "Feet to Meters",
+                    "Kilograms to Pounds", "Pounds to Kilograms",
+                    "Kilometers to Miles", "Miles to Kilometers",
+                    "Liters to Gallons", "Gallons to Liters",
+                    "Kilometers/hour to Miles/hour", "Miles/hour to Kilometers/hour",
+                    "Celsius to Kelvin", "Kelvin to Celsius",
+                    "Square meters to Square feet", "Square feet to Square meters",
+                    "Hours to Minutes", "Minutes to Seconds",
+                    "Joules to Calories", "Calories to Joules",
+                    "Pascals to Atmospheres", "Atmospheres to Pascals",
+                    "Grams to Ounces", "Ounces to Grams"
+            };
+            for (String op : convOps)
+                operationCombo.addItem(op);
+            input2Field.setEnabled(false);
+            input2Field.setText("");
+        }
+    }
+
+    private void performCalculation() {
+        try {
+            if (modeCombo.getSelectedItem().equals("Calculator")) {
+                double a = Double.parseDouble(input1Field.getText());
+                String op = (String) operationCombo.getSelectedItem();
+                double res;
+                if (op.matches("sqrt|log|sin|cos|tan|!|exp|abs|inv")) {
+                    res = performUnaryCalc(op, a);
+                } else {
+                    double b = Double.parseDouble(input2Field.getText());
+                    res = performBinaryCalc(op, a, b);
+                }
+                resultLabel.setText(String.format("Result: %.4f", res));
+            } else {
+                double val = Double.parseDouble(input1Field.getText());
+                String conv = (String) operationCombo.getSelectedItem();
+                double res = performConversion(conv, val);
+                resultLabel.setText(String.format("Result: %.4f", res));
             }
-        }
-        if (valid) {
-            System.out.printf("Result: %.4f%n", res);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Please enter valid numeric inputs.",
+                    "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this,
+                    ex.getMessage(),
+                    "Calculation Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Error: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    public static double factorial(int n) {
-        double fact = 1;
-        for (int i = 2; i <= n; i++) {
-            fact *= i;
-        }
-        return fact;
-    }
-
-    public static void converter(Scanner sc) {
-        System.out.println("\nConverter:");
-        System.out.println("1. Celsius to Fahrenheit");
-        System.out.println("2. Fahrenheit to Celsius");
-        System.out.println("3. Meters to Feet");
-        System.out.println("4. Feet to Meters");
-        System.out.println("5. Kilograms to Pounds");
-        System.out.println("6. Pounds to Kilograms");
-        System.out.println("7. Kilometers to Miles");
-        System.out.println("8. Miles to Kilometers");
-        System.out.println("9. Liters to Gallons");
-        System.out.println("10. Gallons to Liters");
-        System.out.println("11. Kilometers/hour to Miles/hour");
-        System.out.println("12. Miles/hour to Kilometers/hour");
-        System.out.println("13. Celsius to Kelvin");
-        System.out.println("14. Kelvin to Celsius");
-        System.out.println("15. Square meters to Square feet");
-        System.out.println("16. Square feet to Square meters");
-        System.out.println("17. Hours to Minutes");
-        System.out.println("18. Minutes to Seconds");
-        System.out.println("19. Joules to Calories");
-        System.out.println("20. Calories to Joules");
-        System.out.println("21. Pascals to Atmospheres");
-        System.out.println("22. Atmospheres to Pascals");
-        System.out.println("23. Grams to Ounces");
-        System.out.println("24. Ounces to Grams");
-
-        System.out.print("Choose conversion: ");
-        int conv = sc.nextInt();
-        System.out.print("Enter value: ");
-        double val = sc.nextDouble();
-
-        switch (conv) {
-            case 1:
-                System.out.printf("%.2f °C = %.2f °F%n", val, cToF(val));
-                break;
-            case 2:
-                System.out.printf("%.2f °F = %.2f °C%n", val, fToC(val));
-                break;
-            case 3:
-                System.out.printf("%.2f m = %.2f ft%n", val, mToFt(val));
-                break;
-            case 4:
-                System.out.printf("%.2f ft = %.2f m%n", val, ftToM(val));
-                break;
-            case 5:
-                System.out.printf("%.2f kg = %.2f lbs%n", val, kgToLb(val));
-                break;
-            case 6:
-                System.out.printf("%.2f lbs = %.2f kg%n", val, lbToKg(val));
-                break;
-            case 7:
-                System.out.printf("%.2f km = %.2f miles%n", val, kmToMiles(val));
-                break;
-            case 8:
-                System.out.printf("%.2f miles = %.2f km%n", val, milesToKm(val));
-                break;
-            case 9:
-                System.out.printf("%.2f liters = %.2f gallons%n", val, litersToGallons(val));
-                break;
-            case 10:
-                System.out.printf("%.2f gallons = %.2f liters%n", val, gallonsToLiters(val));
-                break;
-            case 11:
-                System.out.printf("%.2f km/h = %.2f mph%n", val, kmhToMph(val));
-                break;
-            case 12:
-                System.out.printf("%.2f mph = %.2f km/h%n", val, mphToKmh(val));
-                break;
-            case 13:
-                System.out.printf("%.2f °C = %.2f K%n", val, cToK(val));
-                break;
-            case 14:
-                System.out.printf("%.2f K = %.2f °C%n", val, kToC(val));
-                break;
-            case 15:
-                System.out.printf("%.2f m² = %.2f ft²%n", val, sqmToSqft(val));
-                break;
-            case 16:
-                System.out.printf("%.2f ft² = %.2f m²%n", val, sqftToSqm(val));
-                break;
-            case 17:
-                System.out.printf("%.2f hours = %.2f minutes%n", val, hoursToMinutes(val));
-                break;
-            case 18:
-                System.out.printf("%.2f minutes = %.2f seconds%n", val, minutesToSeconds(val));
-                break;
-            case 19:
-                System.out.printf("%.2f joules = %.2f calories%n", val, joulesToCalories(val));
-                break;
-            case 20:
-                System.out.printf("%.2f calories = %.2f joules%n", val, caloriesToJoules(val));
-                break;
-            case 21:
-                System.out.printf("%.2f pascals = %.6f atmospheres%n", val, pascalsToAtm(val));
-                break;
-            case 22:
-                System.out.printf("%.6f atmospheres = %.2f pascals%n", val, atmToPascals(val));
-                break;
-            case 23:
-                System.out.printf("%.2f grams = %.2f ounces%n", val, gramsToOunces(val));
-                break;
-            case 24:
-                System.out.printf("%.2f ounces = %.2f grams%n", val, ouncesToGrams(val));
-                break;
+    // Calculator unary operations
+    private double performUnaryCalc(String op, double a) {
+        switch (op) {
+            case "sqrt":
+                if (a < 0)
+                    throw new IllegalArgumentException("Cannot take square root of negative.");
+                return Math.sqrt(a);
+            case "log":
+                if (a <= 0)
+                    throw new IllegalArgumentException("Log undefined for zero or negative.");
+                return Math.log10(a);
+            case "sin":
+                return Math.sin(Math.toRadians(a));
+            case "cos":
+                return Math.cos(Math.toRadians(a));
+            case "tan":
+                return Math.tan(Math.toRadians(a));
+            case "!":
+                if (a < 0 || a != (int) a)
+                    throw new IllegalArgumentException("Factorial undefined for negative or non-integers.");
+                return factorial((int) a);
+            case "exp":
+                return Math.exp(a);
+            case "abs":
+                return Math.abs(a);
+            case "inv":
+                if (a == 0)
+                    throw new IllegalArgumentException("Inverse of zero undefined.");
+                return 1 / a;
             default:
-                System.out.println("Unknown conversion.");
+                throw new IllegalArgumentException("Unknown unary operator.");
         }
     }
 
+    // Calculator binary operations
+    private double performBinaryCalc(String op, double a, double b) {
+        switch (op) {
+            case "+":
+                return a + b;
+            case "-":
+                return a - b;
+            case "*":
+                return a * b;
+            case "/":
+                if (b == 0)
+                    throw new IllegalArgumentException("Cannot divide by zero.");
+                return a / b;
+            case "^":
+                return Math.pow(a, b);
+            case "%":
+                if (b == 0)
+                    throw new IllegalArgumentException("Cannot modulo by zero.");
+                return a % b;
+            default:
+                throw new IllegalArgumentException("Unknown binary operator.");
+        }
+    }
+
+    
+    private double performConversion(String conv, double val) {
+        switch (conv) {
+            case "Celsius to Fahrenheit":
+                return cToF(val);
+            case "Fahrenheit to Celsius":
+                return fToC(val);
+            case "Meters to Feet":
+                return mToFt(val);
+            case "Feet to Meters":
+                return ftToM(val);
+            case "Kilograms to Pounds":
+                return kgToLb(val);
+            case "Pounds to Kilograms":
+                return lbToKg(val);
+            case "Kilometers to Miles":
+                return kmToMiles(val);
+            case "Miles to Kilometers":
+                return milesToKm(val);
+            case "Liters to Gallons":
+                return litersToGallons(val);
+            case "Gallons to Liters":
+                return gallonsToLiters(val);
+            case "Kilometers/hour to Miles/hour":
+                return kmhToMph(val);
+            case "Miles/hour to Kilometers/hour":
+                return mphToKmh(val);
+            case "Celsius to Kelvin":
+                return cToK(val);
+            case "Kelvin to Celsius":
+                return kToC(val);
+            case "Square meters to Square feet":
+                return sqmToSqft(val);
+            case "Square feet to Square meters":
+                return sqftToSqm(val);
+            case "Hours to Minutes":
+                return hoursToMinutes(val);
+            case "Minutes to Seconds":
+                return minutesToSeconds(val);
+            case "Joules to Calories":
+                return joulesToCalories(val);
+            case "Calories to Joules":
+                return caloriesToJoules(val);
+            case "Pascals to Atmospheres":
+                return pascalsToAtm(val);
+            case "Atmospheres to Pascals":
+                return atmToPascals(val);
+            case "Grams to Ounces":
+                return gramsToOunces(val);
+            case "Ounces to Grams":
+                return ouncesToGrams(val);
+            default:
+                throw new IllegalArgumentException("Unknown conversion.");
+        }
+    }
+
+    
+    private double factorial(int n) {
+        double f = 1;
+        for (int i = 2; i <= n; i++)
+            f *= i;
+        return f;
+    }
+
+    
     public static double cToF(double c) {
         return c * 9 / 5 + 32;
     }
@@ -299,12 +318,12 @@ public class Calculator {
         return mph / 0.621371;
     }
 
-    public static double cToK(double celsius) {
-        return celsius + 273.15;
+    public static double cToK(double c) {
+        return c + 273.15;
     }
 
-    public static double kToC(double kelvin) {
-        return kelvin - 273.15;
+    public static double kToC(double k) {
+        return k - 273.15;
     }
 
     public static double sqmToSqft(double sqm) {
@@ -327,8 +346,8 @@ public class Calculator {
         return joules / 4.184;
     }
 
-    public static double caloriesToJoules(double calories) {
-        return calories * 4.184;
+    public static double caloriesToJoules(double cal) {
+        return cal * 4.184;
     }
 
     public static double pascalsToAtm(double pascals) {
@@ -339,12 +358,16 @@ public class Calculator {
         return atm * 101325;
     }
 
-    public static double gramsToOunces(double grams) {
-        return grams * 0.035274;
+    public static double gramsToOunces(double g) {
+        return g * 0.035274;
     }
 
-    public static double ouncesToGrams(double ounces) {
-        return ounces / 0.035274;
+    public static double ouncesToGrams(double oz) {
+        return oz / 0.035274;
     }
 
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(CalculatorConverterGUI::new);
+    }
 }
