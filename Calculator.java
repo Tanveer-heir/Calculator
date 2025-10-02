@@ -1,84 +1,130 @@
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 
 public class CalculatorConverterGUI extends JFrame {
     private final JComboBox<String> modeCombo;
     private final JComboBox<String> operationCombo;
     private final JTextField input1Field;
-    private JTextField input2Field;
+    private final JTextField input2Field;
     private JButton calculateButton;
     private JButton resetButton;
+    private JButton copyButton;
     private JLabel resultLabel;
+    private JButton darkModeButton;
+    private JButton viewAllButton;
+    private DefaultListModel<String> historyModel;
+    private JList<String> historyList;
+    private JScrollPane historyScroll;
+    private JComboBox<String> insertCombo;
 
     public CalculatorConverterGUI() {
         setTitle("Calculator & Converter");
-        setSize(450, 320);
+        setSize(600, 440);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(6, 6, 6, 6);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridx = 0; gbc.gridy = 0;
         add(new JLabel("Mode:"), gbc);
         modeCombo = new JComboBox<>(new String[] { "Calculator", "Converter" });
-        gbc.gridx = 1;
-        gbc.gridy = 0;
+        gbc.gridx = 1; gbc.gridy = 0;
         add(modeCombo, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridx = 0; gbc.gridy = 1;
         add(new JLabel("Operation:"), gbc);
         operationCombo = new JComboBox<>();
-        gbc.gridx = 1;
-        gbc.gridy = 1;
+        gbc.gridx = 1; gbc.gridy = 1;
         add(operationCombo, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridx = 0; gbc.gridy = 2;
         add(new JLabel("Input 1:"), gbc);
         input1Field = new JTextField();
-        gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridx = 1; gbc.gridy = 2;
         add(input1Field, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridx = 0; gbc.gridy = 3;
         add(new JLabel("Input 2 (if needed):"), gbc);
         input2Field = new JTextField();
-        gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridx = 1; gbc.gridy = 3;
         add(input2Field, gbc);
 
-        // Add button panel for Calculate and Reset
+        // Scientific Constants Panel with target selector
+        insertCombo = new JComboBox<>(new String[] { "Input 1", "Input 2" });
+        JPanel constPanel = new JPanel();
+        JButton piBtn = new JButton("π");
+        JButton eBtn = new JButton("e");
+        constPanel.add(new JLabel("Insert π/e into:"));
+        constPanel.add(insertCombo);
+        constPanel.add(piBtn);
+        constPanel.add(eBtn);
+        gbc.gridx = 2; gbc.gridy = 2; gbc.gridheight = 2;
+        add(constPanel, gbc);
+        gbc.gridheight = 1;
+
+        // History Panel
+        historyModel = new DefaultListModel<>();
+        historyList = new JList<>(historyModel);
+        historyScroll = new JScrollPane(historyList);
+        historyScroll.setPreferredSize(new Dimension(250, 170));
+        gbc.gridx = 2; gbc.gridy = 0; gbc.gridheight = 2;
+        add(historyScroll, gbc);
+        gbc.gridheight = 1;
+
+        // Buttons Panel
         calculateButton = new JButton("Calculate");
         resetButton = new JButton("Reset");
+        copyButton = new JButton("Copy Result");
+        darkModeButton = new JButton("Dark Mode");
+        viewAllButton = new JButton("View All");
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
         buttonPanel.add(calculateButton);
         buttonPanel.add(resetButton);
+        buttonPanel.add(copyButton);
+        buttonPanel.add(darkModeButton);
+        buttonPanel.add(viewAllButton);
 
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 3;
         add(buttonPanel, gbc);
+        gbc.gridwidth = 1;
 
         resultLabel = new JLabel("Result: ");
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 3;
         add(resultLabel, gbc);
+        gbc.gridwidth = 1;
 
         updateOperations();
 
         modeCombo.addActionListener(e -> updateOperations());
         calculateButton.addActionListener(e -> performCalculation());
         resetButton.addActionListener(e -> resetFields());
+        copyButton.addActionListener(e -> copyResultToClipboard());
+        darkModeButton.addActionListener(e -> toggleDarkMode());
+        viewAllButton.addActionListener(e -> viewHistoryDialog());
+
+        // Scientific constants insert logic
+        piBtn.addActionListener(e -> insertConstant(Math.PI));
+        eBtn.addActionListener(e -> insertConstant(Math.E));
+
+        // Keyboard shortcuts
+        getRootPane().setDefaultButton(calculateButton);
+        addKeyboardShortcuts();
 
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+
+    private void addKeyboardShortcuts() {
+        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        KeyStroke esc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+
+        getRootPane().registerKeyboardAction(e -> performCalculation(), enter, JComponent.WHEN_IN_FOCUSED_WINDOW);
+        getRootPane().registerKeyboardAction(e -> resetFields(), esc, JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
     private void updateOperations() {
@@ -89,8 +135,7 @@ public class CalculatorConverterGUI extends JFrame {
                     "sqrt", "log", "sin", "cos", "tan",
                     "!", "exp", "abs", "inv"
             };
-            for (String op : calcOps)
-                operationCombo.addItem(op);
+            for (String op : calcOps) operationCombo.addItem(op);
             input2Field.setEnabled(true);
         } else {
             String[] convOps = {
@@ -107,56 +152,130 @@ public class CalculatorConverterGUI extends JFrame {
                     "Pascals to Atmospheres", "Atmospheres to Pascals",
                     "Grams to Ounces", "Ounces to Grams"
             };
-            for (String op : convOps)
-                operationCombo.addItem(op);
+            for (String op : convOps) operationCombo.addItem(op);
             input2Field.setEnabled(false);
             input2Field.setText("");
         }
     }
 
     private void performCalculation() {
+        colorReset();
         try {
             if (modeCombo.getSelectedItem().equals("Calculator")) {
-                double a = Double.parseDouble(input1Field.getText());
+                double a;
+                try {
+                    a = Double.parseDouble(input1Field.getText());
+                } catch (NumberFormatException ex) {
+                    highlightError(input1Field);
+                    throw new NumberFormatException("Input 1 is not a valid number");
+                }
                 String op = (String) operationCombo.getSelectedItem();
                 double res;
                 if (op.matches("sqrt|log|sin|cos|tan|!|exp|abs|inv")) {
                     res = performUnaryCalc(op, a);
+                    addHistory(String.format("%s %s = %.4f", op, a, res));
                 } else {
-                    double b = Double.parseDouble(input2Field.getText());
+                    double b;
+                    try {
+                        b = Double.parseDouble(input2Field.getText());
+                    } catch (NumberFormatException ex) {
+                        highlightError(input2Field);
+                        throw new NumberFormatException("Input 2 is not a valid number");
+                    }
                     res = performBinaryCalc(op, a, b);
+                    addHistory(String.format("%s %s %s = %.4f", a, op, b, res));
                 }
                 resultLabel.setText(String.format("Result: %.4f", res));
             } else {
-                double val = Double.parseDouble(input1Field.getText());
+                double val;
+                try {
+                    val = Double.parseDouble(input1Field.getText());
+                } catch (NumberFormatException ex) {
+                    highlightError(input1Field);
+                    throw new NumberFormatException("Input is not a valid number");
+                }
                 String conv = (String) operationCombo.getSelectedItem();
                 double res = performConversion(conv, val);
+                addHistory(String.format("%s: %s → %.4f", conv, val, res));
                 resultLabel.setText(String.format("Result: %.4f", res));
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Please enter valid numeric inputs.",
-                    "Input Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
         } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this,
-                    ex.getMessage(),
-                    "Calculation Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Calculation Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Error: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void resetFields() {
         input1Field.setText("");
-        if(input2Field.isEnabled()) {
-            input2Field.setText("");
-        }
+        if(input2Field.isEnabled()) input2Field.setText("");
         resultLabel.setText("Result: ");
         modeCombo.setSelectedIndex(0);
         updateOperations();
         operationCombo.setSelectedIndex(0);
+        colorReset();
+    }
+
+    private void copyResultToClipboard() {
+        String resText = resultLabel.getText().replace("Result: ", "");
+        StringSelection sel = new StringSelection(resText.trim());
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, null);
+        JOptionPane.showMessageDialog(this, "Result copied to clipboard!");
+    }
+
+    // Highlight field with error
+    private void highlightError(JTextField field) {
+        field.setBorder(new LineBorder(Color.RED, 2));
+    }
+
+    private void colorReset() {
+        input1Field.setBorder(UIManager.getBorder("TextField.border"));
+        input2Field.setBorder(UIManager.getBorder("TextField.border"));
+    }
+
+    private void addHistory(String entry) {
+        historyModel.addElement(entry);
+    }
+
+    private void viewHistoryDialog() {
+        JTextArea area = new JTextArea();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < historyModel.getSize(); i++) {
+            sb.append(historyModel.getElementAt(i)).append("\n");
+        }
+        area.setText(sb.toString());
+        area.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(area);
+        scrollPane.setPreferredSize(new Dimension(400, 220));
+        JOptionPane.showMessageDialog(this, scrollPane, "History", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // Scientific Constants Picker with input field choice
+    private void insertConstant(double value) {
+        JTextField target = insertCombo.getSelectedItem().equals("Input 1") ? input1Field : input2Field;
+        target.setText(String.valueOf(value));
+    }
+
+    // Dark Mode
+    private boolean darkMode = false;
+    private void toggleDarkMode() {
+        try {
+            if (!darkMode) {
+                UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+                darkMode = true;
+            } else {
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                darkMode = false;
+            }
+            SwingUtilities.updateComponentTreeUI(this);
+            pack();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error switching mode: " + e.getMessage(),
+                    "Dark Mode Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     // Calculator unary operations
@@ -274,106 +393,35 @@ public class CalculatorConverterGUI extends JFrame {
 
     private double factorial(int n) {
         double f = 1;
-        for (int i = 2; i <= n; i++)
-            f *= i;
+        for (int i = 2; i <= n; i++) f *= i;
         return f;
     }
 
-    public static double cToF(double c) {
-        return c * 9 / 5 + 32;
-    }
-
-    public static double fToC(double f) {
-        return (f - 32) * 5 / 9;
-    }
-
-    public static double mToFt(double m) {
-        return m * 3.28084;
-    }
-
-    public static double ftToM(double ft) {
-        return ft / 3.28084;
-    }
-
-    public static double kgToLb(double kg) {
-        return kg * 2.20462;
-    }
-
-    public static double lbToKg(double lb) {
-        return lb / 2.20462;
-    }
-
-    public static double kmToMiles(double km) {
-        return km * 0.621371;
-    }
-
-    public static double milesToKm(double miles) {
-        return miles / 0.621371;
-    }
-
-    public static double litersToGallons(double liters) {
-        return liters * 0.264172;
-    }
-
-    public static double gallonsToLiters(double gallons) {
-        return gallons / 0.264172;
-    }
-
-    public static double kmhToMph(double kmh) {
-        return kmh * 0.621371;
-    }
-
-    public static double mphToKmh(double mph) {
-        return mph / 0.621371;
-    }
-
-    public static double cToK(double c) {
-        return c + 273.15;
-    }
-
-    public static double kToC(double k) {
-        return k - 273.15;
-    }
-
-    public static double sqmToSqft(double sqm) {
-        return sqm * 10.7639;
-    }
-
-    public static double sqftToSqm(double sqft) {
-        return sqft / 10.7639;
-    }
-
-    public static double hoursToMinutes(double hrs) {
-        return hrs * 60;
-    }
-
-    public static double minutesToSeconds(double mins) {
-        return mins * 60;
-    }
-
-    public static double joulesToCalories(double joules) {
-        return joules / 4.184;
-    }
-
-    public static double caloriesToJoules(double cal) {
-        return cal * 4.184;
-    }
-
-    public static double pascalsToAtm(double pascals) {
-        return pascals / 101325;
-    }
-
-    public static double atmToPascals(double atm) {
-        return atm * 101325;
-    }
-
-    public static double gramsToOunces(double g) {
-        return g * 0.035274;
-    }
-
-    public static double ouncesToGrams(double oz) {
-        return oz / 0.035274;
-    }
+    // Conversion methods
+    public static double cToF(double c) { return c * 9 / 5 + 32; }
+    public static double fToC(double f) { return (f - 32) * 5 / 9; }
+    public static double mToFt(double m) { return m * 3.28084; }
+    public static double ftToM(double ft) { return ft / 3.28084; }
+    public static double kgToLb(double kg) { return kg * 2.20462; }
+    public static double lbToKg(double lb) { return lb / 2.20462; }
+    public static double kmToMiles(double km) { return km * 0.621371; }
+    public static double milesToKm(double miles) { return miles / 0.621371; }
+    public static double litersToGallons(double liters) { return liters * 0.264172; }
+    public static double gallonsToLiters(double gallons) { return gallons / 0.264172; }
+    public static double kmhToMph(double kmh) { return kmh * 0.621371; }
+    public static double mphToKmh(double mph) { return mph / 0.621371; }
+    public static double cToK(double c) { return c + 273.15; }
+    public static double kToC(double k) { return k - 273.15; }
+    public static double sqmToSqft(double sqm) { return sqm * 10.7639; }
+    public static double sqftToSqm(double sqft) { return sqft / 10.7639; }
+    public static double hoursToMinutes(double hrs) { return hrs * 60; }
+    public static double minutesToSeconds(double mins) { return mins * 60; }
+    public static double joulesToCalories(double joules) { return joules / 4.184; }
+    public static double caloriesToJoules(double cal) { return cal * 4.184; }
+    public static double pascalsToAtm(double pascals) { return pascals / 101325; }
+    public static double atmToPascals(double atm) { return atm * 101325; }
+    public static double gramsToOunces(double g) { return g * 0.035274; }
+    public static double ouncesToGrams(double oz) { return oz / 0.035274; }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(CalculatorConverterGUI::new);
