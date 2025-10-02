@@ -8,6 +8,7 @@ public class CalculatorConverterGUI extends JFrame {
     private final JTextField input1Field;
     private JTextField input2Field;
     private JButton calculateButton;
+    private JButton resetButton;
     private JLabel resultLabel;
 
     public CalculatorConverterGUI() {
@@ -27,7 +28,6 @@ public class CalculatorConverterGUI extends JFrame {
         gbc.gridy = 0;
         add(modeCombo, gbc);
 
-       
         gbc.gridx = 0;
         gbc.gridy = 1;
         add(new JLabel("Operation:"), gbc);
@@ -36,7 +36,6 @@ public class CalculatorConverterGUI extends JFrame {
         gbc.gridy = 1;
         add(operationCombo, gbc);
 
-       
         gbc.gridx = 0;
         gbc.gridy = 2;
         add(new JLabel("Input 1:"), gbc);
@@ -45,7 +44,6 @@ public class CalculatorConverterGUI extends JFrame {
         gbc.gridy = 2;
         add(input1Field, gbc);
 
-       
         gbc.gridx = 0;
         gbc.gridy = 3;
         add(new JLabel("Input 2 (if needed):"), gbc);
@@ -54,27 +52,30 @@ public class CalculatorConverterGUI extends JFrame {
         gbc.gridy = 3;
         add(input2Field, gbc);
 
-      
+        // Add button panel for Calculate and Reset
         calculateButton = new JButton("Calculate");
+        resetButton = new JButton("Reset");
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout());
+        buttonPanel.add(calculateButton);
+        buttonPanel.add(resetButton);
+
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 2;
-        add(calculateButton, gbc);
+        add(buttonPanel, gbc);
 
-       
         resultLabel = new JLabel("Result: ");
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
         add(resultLabel, gbc);
 
-        
         updateOperations();
 
-        
         modeCombo.addActionListener(e -> updateOperations());
-
         calculateButton.addActionListener(e -> performCalculation());
+        resetButton.addActionListener(e -> resetFields());
 
         setLocationRelativeTo(null);
         setVisible(true);
@@ -147,6 +148,17 @@ public class CalculatorConverterGUI extends JFrame {
         }
     }
 
+    private void resetFields() {
+        input1Field.setText("");
+        if(input2Field.isEnabled()) {
+            input2Field.setText("");
+        }
+        resultLabel.setText("Result: ");
+        modeCombo.setSelectedIndex(0);
+        updateOperations();
+        operationCombo.setSelectedIndex(0);
+    }
+
     // Calculator unary operations
     private double performUnaryCalc(String op, double a) {
         switch (op) {
@@ -205,7 +217,6 @@ public class CalculatorConverterGUI extends JFrame {
         }
     }
 
-    
     private double performConversion(String conv, double val) {
         switch (conv) {
             case "Celsius to Fahrenheit":
@@ -261,7 +272,6 @@ public class CalculatorConverterGUI extends JFrame {
         }
     }
 
-    
     private double factorial(int n) {
         double f = 1;
         for (int i = 2; i <= n; i++)
@@ -269,7 +279,6 @@ public class CalculatorConverterGUI extends JFrame {
         return f;
     }
 
-    
     public static double cToF(double c) {
         return c * 9 / 5 + 32;
     }
@@ -365,7 +374,6 @@ public class CalculatorConverterGUI extends JFrame {
     public static double ouncesToGrams(double oz) {
         return oz / 0.035274;
     }
-
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(CalculatorConverterGUI::new);
